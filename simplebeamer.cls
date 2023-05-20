@@ -12,21 +12,21 @@
 
 % 获取语言参数，默认英文
 \DeclareStringOption[en]{lang}
-\DeclareVoidOption{cn}{\skv{lang=cn}}
 \DeclareVoidOption{en}{\skv{lang=en}}
+\DeclareVoidOption{cn}{\skv{lang=cn}}
 
 % 获取logo参数，默认off
 \DeclareStringOption[off]{logo}
-\DeclareVoidOption{on}{\skv{lang=on}}
 \DeclareVoidOption{off}{\skv{lang=off}}
+\DeclareVoidOption{on}{\skv{lang=on}}
 
-% 获取中文字体参数，默认 founder
-\DeclareStringOption[founder]{chinesefont}
-\DeclareVoidOption{ctexfont}{\skv{chinesefont=ctexfont}}
+% 获取中文字体参数，默认 plain
+\DeclareStringOption[plain]{chinesefont}
+\DeclareVoidOption{plain}{\skv{chinesefont=plain}}
 \DeclareVoidOption{founder}{\skv{chinesefont=founder}}
 \DeclareVoidOption{nofont}{\skv{chinesefont=nofont}}
 
-% 获取主题参数，默认 metropolis
+% 获取主题参数，默认 default(metropolis)
 \DeclareStringOption[default]{theme}
 \DeclareVoidOption{default}{\skv{theme=default}}
 \DeclareVoidOption{retro}{\skv{theme=retro}}
@@ -37,8 +37,17 @@
 \DeclareStringOption[numeric-comp]{citestyle}
 \DeclareStringOption[numeric]{bibstyle}
 \DeclareStringOption[biber]{bibend}
-\DeclareVoidOption{biber}{\ekv{bibend=biber}}
-\DeclareVoidOption{bibtex}{\ekv{bibend=bibtex}}
+
+% 设置编译模式
+\DeclareStringOption[final]{mode}
+\DeclareVoidOption{final}{\skv{mode=final}}
+\DeclareVoidOption{preprint}{\skv{mode=preprint}}
+\DeclareVoidOption{nocomp}{\skv{mode=nocomp}}
+
+% 设置标题页面层级
+\DeclareStringOption[section]{page}
+\DeclareVoidOption{section}{\skv{page=section}}
+\DeclareVoidOption{subsection}{\skv{page=subsection}}
 
 % 关闭字体警告
 \PassOptionsToPackage{quiet}{fontspec}
@@ -47,7 +56,20 @@
 % 加载 beamer
 \DeclareDefaultOption{\PassOptionsToClass{\CurrentOption}{beamer}}
 \ProcessKeyvalOptions*\relax
-\LoadClass[notheorems]{beamer}
+\LoadClass[notheorems,hyperref]{beamer}
+
+% 判断是否显示行号
+\ifdefstring{\SIMPLE@mode}{preprint}{
+    \RequirePackage{lineno}
+    \linenumbers
+}
+
+% 判断是否压缩图片
+\ifdefstring{\SIMPLE@mode}{nocomp}{
+    \RequirePackage{lineno}
+    \linenumbers
+    \special{dvipdfmx:config z 0}
+}
 
 % 数学相关包
 \RequirePackage{amsthm}
@@ -63,6 +85,12 @@
 \RequirePackage{graphicx}
 \RequirePackage{subcaption}
 \RequirePackage{float}
+\RequirePackage{animate}
+
+% 标题前后间距
+\captionsetup{font=footnotesize,skip=5pt}
+\captionsetup[subfigure]{skip=5pt,belowskip=1pt}
+\captionsetup[table]{skip=5pt,belowskip=1pt}
 
 \RequirePackage{algorithm}
 \RequirePackage{algorithmic}
@@ -91,6 +119,8 @@
 \RequirePackage{anyfontsize}
 \RequirePackage{iftex}
 \RequirePackage{silence}
+\RequirePackage{multicol}
+\RequirePackage{multirow}
 
 % 定义引用颜色
 \definecolor{HEYELV}{HTML}{1a6840}
@@ -108,8 +138,9 @@
     backend=\SIMPLE@bibend,
     citestyle=\SIMPLE@citestyle,
     bibstyle=\SIMPLE@bibstyle,
+    sorting=none
 ]{biblatex}
-\defbibheading{simplepaper}[\ebibname]{
+\defbibheading{simplebeamer}[\ebibname]{
     \section*{#1}
     \addcontentsline{toc}{section}{#1}
 }
@@ -118,54 +149,32 @@
 % 设置引用文件
 \addbibresource{ref.bib}
 
-% 设置链接格式
-\RequirePackage{hyperref}
-\hypersetup{
-    pdfborder={0 0 0},
-    colorlinks=true,
-    linkcolor={HEYELV},
-    urlcolor={YEHUI},
-    filecolor={DANQINZI},
-    citecolor={YOULAN},
-    linktoc=all,
-}
-
 % 使用cleveref包用于引用公式图片表格等
 \WarningsOff
 \RequirePackage[capitalise]{cleveref}
 \WarningsOn
-% 公式引用只显示括号
-\crefname{equation}{}{}
+
+% cleveref 使用 hyperlink
+\let\chyperref\cref
+\renewcommand{\cref}[1]{\hyperlink{#1}{\chyperref{#1}}}
+
 % 设置bm为boldsymbol
 \newcommand{\bm}[1]{\boldsymbol{#1}}
 
-% 设置字体
-\ifcsname kaishu\endcsname
-    \newcommand{\citshape}{\kaishu}
-\else
-    \newcommand{\citshape}{\itshape}
-\fi
-\ifcsname kaishu\endcsname
-    \newcommand{\cnormal}{\kaishu}
-\else
-    \newcommand{\cnormal}{\normalfont}
-\fi
-
-\ifcsname fangsong\endcsname
-    \newcommand{\cfs}{\fangsong}
-\else
-    \newcommand{\cfs}{\normalfont}
-\fi
-
-% 判断是否压缩图片
-\ifdefstring{\SIMPLE@style}{nocomp}{
-    \special{dvipdfmx:config z 0}
-}
+% 消除警告
 \vfuzz=500pt
 \hfuzz=500pt
 
+% 设置英文字体
 \usefonttheme{professionalfonts}
-\usetheme{metropolis}
+
+% 使用 metropolis 主题
+\ifdefstring{\SIMPLE@page}{section}{
+    \usetheme{metropolis}
+}{\relax}
+\ifdefstring{\SIMPLE@page}{subsection}{
+    \usetheme[sectionpage=none,subsectionpage=progressbar]{metropolis}
+}{\relax}
 
 % logo 设置
 \ifdefstring{\SIMPLE@logo}{on}{
@@ -179,12 +188,12 @@
         \end{tikzpicture}
     }
     \logo{
-        \begin{tikzpicture}[fill opacity=0.4]
+        \begin{tikzpicture}[fill opacity=0.15]
             \clip (0,0) circle (.05\paperwidth);
             \node at (0,0) {\includegraphics[width=.1\paperwidth]{./img/logo}};
         \end{tikzpicture}
-        \hspace*{.85\paperwidth}
-        \vspace*{-.05\paperwidth}
+        \hspace*{.88\paperwidth}
+        \vspace*{-.07\paperwidth}
     }
 }
 
@@ -192,42 +201,33 @@
 \ifdefstring{\SIMPLE@lang}{cn}{
     \renewcommand{\today}{\number\year 年 \number\month 月 \number\day 日}
 
-    \ifdefstring{\SIMPLE@chinesefont}{ctexfont}{
+    \ifdefstring{\SIMPLE@chinesefont}{plain}{
         \RequirePackage[UTF8,scheme=plain]{ctex}
     }{\relax}
 
     \ifdefstring{\SIMPLE@chinesefont}{founder}{
         \RequirePackage[UTF8,scheme=plain,fontset=none]{ctex}
-        \setmainfont{FZHei-B01}
-        \setCJKmainfont[BoldFont={FZHei-B01},ItalicFont={FZKai-Z03}]{FZShuSong-Z01}
-        \setCJKsansfont[BoldFont={FZHei-B01}]{FZKai-Z03}
-        \setCJKmonofont[BoldFont={FZHei-B01}]{FZFangSong-Z02}
-        \setCJKfamilyfont{zhsong}{FZShuSong-Z01}
-        \setCJKfamilyfont{zhhei}{FZHei-B01}
-        \setCJKfamilyfont{zhkai}[BoldFont={FZHei-B01}]{FZKai-Z03}
-        \setCJKfamilyfont{zhfs}[BoldFont={FZHei-B01}]{FZFangSong-Z02}
-        \newcommand*{\songti}{\CJKfamily{zhsong}}
-        \newcommand*{\heiti}{\CJKfamily{zhhei}}
-        \newcommand*{\kaishu}{\CJKfamily{zhkai}}
-        \newcommand*{\fangsong}{\CJKfamily{zhfs}}
+        \setCJKsansfont{FZShuSong-Z01}[
+            UprightFont={FZFangSong-Z02},
+            BoldFont={FZHei-B01},
+            ItalicFont={FZKai-Z03},
+            BoldItalicFont={FZHei-B01},
+        ]
     }{\relax}
 
     \ifdefstring{\SIMPLE@chinesefont}{nofont}{
         \RequirePackage[UTF8,scheme=plain,fontset=none]{ctex}
     }{\relax}
-
-    \AfterEndPreamble{\setlength\parindent{2\ccwd}}
 }{\relax}
 
 % 设置中文环境名称
 \ifdefstring{\SIMPLE@lang}{cn}{
     \theoremstyle{plain}% default
     \newtheorem{theorem}{定理}[section] %
-    \newtheorem{lemma}[theorem]{引理} %
-    \newtheorem{proposition}[theorem]{命题} %
-    \newtheorem{property}[theorem]{性质}
-    \newtheorem*{corollary}{推论} %
-    \theoremstyle{definition} %
+    \newtheorem{lemma}{引理}[section] %
+    \newtheorem{proposition}{命题}[section] %
+    \newtheorem{property}{性质}[section] %
+    \newtheorem{corollary}{推论}[section] %
     \newtheorem{definition}{定义}[section] %
     \newtheorem{conjecture}{猜想}[section] %
     \newtheorem{example}{例}[section] %
@@ -245,7 +245,6 @@
     \newcommand\updatetext{日期：}%
     \newcommand{\ebibname}{参考文献}
     \renewcommand{\ALG@name}{算法}
-    \setlength\parindent{2\ccwd}
     \renewcommand{\algorithmicrequire}{\textbf{输入：}}
     \renewcommand{\algorithmicensure}{\textbf{输出：}}
 
@@ -274,17 +273,16 @@
     \crefname{chapter}{章}{章}
     \crefname{section}{节}{节}
     \crefname{subsection}{小节}{小节}
-
 }{\relax}
 
 % 设置英文环境名称
 \ifdefstring{\SIMPLE@lang}{en}{
     \theoremstyle{plain}% default
     \newtheorem{theorem}{Theorem}[section] %
-    \newtheorem{lemma}[theorem]{Lemma} %
-    \newtheorem{proposition}[theorem]{Proposition} %
-    \newtheorem*{corollary}{Corollary} %
-    \theoremstyle{definition} %
+    \newtheorem{lemma}{Lemma}[section] %
+    \newtheorem{proposition}{Proposition}[section] %
+    \newtheorem{property}{Property}[section] %
+    \newtheorem{corollary}{Corollary}[section] %
     \newtheorem{definition}{Definition}[section] %
     \newtheorem{conjecture}{Conjecture}[section] %
     \newtheorem{example}{Example}[section] %
@@ -296,14 +294,32 @@
     \renewcommand*{\proofname}{\normalfont\bfseries Proof}%
     \newcommand\versiontext{\itshape Version: }%
     \newcommand\updatetext{\itshape Date: }%
-    \setlength\parindent{2em}
     \newcommand\figref[1]{{\bfseries Figure~\ref{#1}}}
     \newcommand\tabref[1]{{\bfseries Table~\ref{#1}}}
     \newcommand{\ebibname}{Reference}
     \renewcommand{\algorithmicrequire}{\textbf{Input:}}
     \renewcommand{\algorithmicensure}{\textbf{Output:}}
+    \crefname{equation}{}{}
 }{\relax}
 
+
+% 设置字体
+\ifcsname kaishu\endcsname
+    \newcommand{\citshape}{\kaishu}
+\else
+    \newcommand{\citshape}{\itshape}
+\fi
+\ifcsname kaishu\endcsname
+    \newcommand{\cnormal}{\kaishu}
+\else
+    \newcommand{\cnormal}{\normalfont}
+\fi
+
+\ifcsname fangsong\endcsname
+    \newcommand{\cfs}{\fangsong}
+\else
+    \newcommand{\cfs}{\normalfont}
+\fi
 
 % 自定义色彩
 % default
@@ -311,19 +327,21 @@
     \definecolor{pri}{HTML}{27373A}
     \definecolor{sec}{HTML}{DD8638}
     \definecolor{ter}{HTML}{27373A}
-    \definecolor{ale}{HTML}{CD3357}
+    \definecolor{ale}{HTML}{DD8638}
     \definecolor{txt}{HTML}{000000}
     \definecolor{bkg}{HTML}{FFFFFF}
+    \definecolor{blk}{HTML}{CCD3D8}
 }{\relax}
 
 % retro
 \ifdefstring{\SIMPLE@theme}{retro}{
     \definecolor{pri}{HTML}{556D7F}
-    \definecolor{sec}{HTML}{ED5126}
+    \definecolor{sec}{HTML}{DD8638}
     \definecolor{ter}{HTML}{2E3840}
-    \definecolor{ale}{HTML}{FF0303}
+    \definecolor{ale}{HTML}{DD8638}
     \definecolor{txt}{HTML}{000000}
     \definecolor{bkg}{HTML}{FFFFFF}
+    \definecolor{blk}{HTML}{CCD3D8}
 }{\relax}
 
 % dark
@@ -334,6 +352,7 @@
     \definecolor{ale}{HTML}{FEDEFF}
     \definecolor{txt}{HTML}{FFFFFF}
     \definecolor{bkg}{HTML}{000000}
+    \definecolor{blk}{HTML}{CCD3D8}
 }{\relax}
 
 % jet
@@ -344,6 +363,7 @@
     \definecolor{ale}{HTML}{7DB9B6}
     \definecolor{txt}{HTML}{000000}
     \definecolor{bkg}{HTML}{FFFFFF}
+    \definecolor{blk}{HTML}{CCD3D8}
 }{\relax}
 
 % set beamer color
@@ -362,3 +382,79 @@
 
 \setbeamercolor{normal text}{fg=txt}
 \setbeamercolor{background canvas}{bg=bkg}
+\setbeamercolor{block body}{bg=blk!30,fg=txt!90}
+\setbeamercolor{block title}{bg=blk,fg=txt!90}
+
+% blocks 圆角
+\setbeamertemplate{blocks}[rounded][shadow=false]
+
+% 设置链接格式
+\hypersetup{
+    pdfborder={0 0 0},
+    colorlinks=true,
+    linkcolor={pri!60!black},
+    urlcolor={sec},
+    filecolor={ter},
+    citecolor={blk},
+    linktoc=all
+}
+
+% 目录显示次级标题
+\def\beamer@tableofcontents[#1]{%
+    \def\beamer@toc@cs{show}%
+    \def\beamer@toc@os{show}%
+    \def\beamer@toc@css{show}%
+    \def\beamer@toc@oss{show}%
+    \def\beamer@toc@ooss{show}%
+    \def\beamer@toc@csss{show}%
+    \def\beamer@toc@osss{show}%
+    \def\beamer@toc@oosss{show}%
+    \def\beamer@toc@ooosss{show}%
+    \beamer@showpartnumber=\c@part%
+    \beamer@pausesectionsfalse%
+    \beamer@pausesubsectionsfalse%
+    \def\beamer@tocsections{<*>}%
+    \setkeys{beamertoc}{firstsection=1}%
+    \setkeys{beamertoc}{#1}%
+    % \vspace*{-.5em}
+    {\makeatletter%
+        \pause[0]%
+        \@input{\jobname.toc}%
+        \vfill}%
+}
+
+% 主标题显示序号，字体大小设为footnotesize
+\setbeamertemplate{section in toc}[sections numbered]
+\setbeamerfont{subsection in toc}{size=\footnotesize}
+% 定理等环境显示序号
+\setbeamertemplate{theorems}[numbered]
+
+% 定理等环境宽度设置为.9行宽
+\setbeamertemplate{theorem begin}{%
+    \begin{center}
+        \begin{minipage}{.9\textwidth}
+            \centering
+            \begin{\inserttheoremblockenv}
+                {%
+                    \inserttheoremname
+                    \inserttheoremnumber
+                    \ifx\inserttheoremaddition\@empty\else\ (\inserttheoremaddition)\fi%
+                }%
+                }
+                \setbeamertemplate{theorem end}{%
+            \end{\inserttheoremblockenv}
+        \end{minipage}
+    \end{center}
+}
+
+% 首行不缩进
+\setlength\parindent{0pt}
+% 调整item缩进
+\settowidth{\leftmargini}{\usebeamertemplate{itemize item}}
+\addtolength{\leftmargini}{2\labelsep}
+% 设置参考文献字体大小
+\setbeamerfont{bibliography item}{size=\tiny}
+\setbeamerfont{bibliography entry author}{size=\tiny}
+\setbeamerfont{bibliography entry title}{size=\tiny}
+\setbeamerfont{bibliography entry location}{size=\tiny}
+\setbeamerfont{bibliography entry note}{size=\tiny}
