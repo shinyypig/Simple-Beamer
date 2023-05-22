@@ -34,7 +34,7 @@
 \DeclareVoidOption{jet}{\skv{theme=jet}}
 
 % 设置引用格式
-\DeclareStringOption[numeric-comp]{citestyle}
+\DeclareStringOption[verbose]{citestyle}
 \DeclareStringOption[numeric]{bibstyle}
 \DeclareStringOption[biber]{bibend}
 
