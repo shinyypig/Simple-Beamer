@@ -34,7 +34,7 @@
 \DeclareVoidOption{jet}{\skv{theme=jet}}
 
 % 设置引用格式
-\DeclareStringOption[verbose]{citestyle}
+\DeclareStringOption[numeric-comp]{citestyle}
 \DeclareStringOption[numeric]{bibstyle}
 \DeclareStringOption[biber]{bibend}
 
@@ -223,14 +223,14 @@
 % 设置中文环境名称
 \ifdefstring{\SIMPLE@lang}{cn}{
     \theoremstyle{plain}% default
-    \newtheorem{theorem}{定理}[section] %
-    \newtheorem{lemma}{引理}[section] %
-    \newtheorem{proposition}{命题}[section] %
-    \newtheorem{property}{性质}[section] %
-    \newtheorem{corollary}{推论}[section] %
-    \newtheorem{definition}{定义}[section] %
-    \newtheorem{conjecture}{猜想}[section] %
-    \newtheorem{example}{例}[section] %
+    \newtheorem{theorem}{定理} %
+    \newtheorem{lemma}{引理} %
+    \newtheorem{proposition}{命题} %
+    \newtheorem{property}{性质} %
+    \newtheorem{corollary}{推论} %
+    \newtheorem{definition}{定义}%
+    \newtheorem{conjecture}{猜想} %
+    \newtheorem{example}{例} %
     \theoremstyle{remark} %
     \newtheorem*{remark}{\normalfont\bfseries 评论} %
     \let\note\relax
@@ -302,7 +302,6 @@
     \crefname{equation}{}{}
 }{\relax}
 
-
 % 设置字体
 \ifcsname kaishu\endcsname
     \newcommand{\citshape}{\kaishu}
@@ -366,6 +365,17 @@
     \definecolor{blk}{HTML}{CCD3D8}
 }{\relax}
 
+% hfut
+\ifdefstring{\SIMPLE@theme}{hfut}{
+    \definecolor{pri}{HTML}{A52828}
+    \definecolor{sec}{HTML}{63071C}
+    \definecolor{ter}{HTML}{2E3840}
+    \definecolor{ale}{HTML}{63071C}
+    \definecolor{txt}{HTML}{000000}
+    \definecolor{bkg}{HTML}{FFFFFF}
+    \definecolor{blk}{HTML}{F4EEE0}
+}{\relax}
+
 % set beamer color
 \setbeamercolor{title}{fg=pri}
 \setbeamercolor{title separator}{fg=sec}
@@ -378,7 +388,6 @@
 \setbeamercolor*{palette tertiary}{fg=pri,bg=ter}
 
 \setbeamercolor{alerted text}{fg=ale}
-\setbeamercolor*{block title}{bg=pri!30!white}
 
 \setbeamercolor{normal text}{fg=txt}
 \setbeamercolor{background canvas}{bg=bkg}
@@ -458,3 +467,45 @@
 \setbeamerfont{bibliography entry title}{size=\tiny}
 \setbeamerfont{bibliography entry location}{size=\tiny}
 \setbeamerfont{bibliography entry note}{size=\tiny}
+
+
+\RequirePackage{tikz-3dplot}
+\RequirePackage{tikzscale}
+\RequirePackage{csvsimple}
+\RequirePackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{patchplots}
+\usetikzlibrary{arrows.meta,angles,quotes,calc}
+\pgfplotsset{compat=newest}
+\pgfplotsset{
+    layers/my layer set/.define layer set={
+            background,
+            main,
+            foreground
+        }{},
+    set layers=my layer set,
+}
+\usetikzlibrary{matrix,calc}
+
+\definecolor{c1}{rgb}{0, 0.4470, 0.7410}  % blue
+\definecolor{c2}{rgb}{0.8500, 0.3250, 0.0980} % red
+\definecolor{c3}{rgb}{0.9290, 0.6940, 0.1250} % yellow
+\definecolor{c4}{rgb}{0.4940, 0.1840, 0.5560} % purple
+\definecolor{c5}{rgb}{0.4660, 0.6740, 0.1880} % green
+\definecolor{c6}{rgb}{0.3010, 0.7450, 0.9330} % cyan
+\definecolor{c7}{rgb}{0.6350, 0.0780, 0.1840} % dark red
+\definecolor{c8}{RGB}{99,200,166}
+\definecolor{c9}{RGB}{72,107,135}
+\definecolor{c10}{RGB}{248,148,125}
+
+\pgfplotsset{
+    colormap={matlab}{
+            color(0cm)=(c1)
+            color(1cm)=(c2)
+            color(2cm)=(c3)
+            color(3cm)=(c4)
+            color(4cm)=(c5)
+            color(5cm)=(c6)
+            color(6cm)=(c7)
+        },
+}
